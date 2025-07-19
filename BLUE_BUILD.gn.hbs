@@ -1,0 +1,54 @@
+import("//build/templates/build_template.gni")
+
+{{#each rules}}
+{{#with this.detail}}
+build_rust("{{crate_name}}") {
+  {{#if epoch}}
+  epoch = "{{epoch}}"
+  {{/if}}
+  crate_type = "{{crate_type}}"
+  sources = [
+    "//external/{{crate_name}}/v{{cargo_pkg_version}}/{{crate_root}}",
+  ]
+  inputs = [
+    {{#each inputs}}
+    "{{this}}",
+    {{/each}}
+  ]
+  edition = "{{edition}}"
+  {{#each deps}}
+  deps = [
+    {{#each this.packages}}
+    {{this.crate_type}}
+    "//external/{{this.name}}/v{{this.epoch}}:{{this.name}}",
+    {{/each}}
+  ]
+  {{/each}}
+  {{#each build_deps}}
+  build_deps = [
+    {{#each this.packages}}
+    "//external/{{this.name}}/v{{this.epoch}}:{{this.name}}",
+    {{/each}}
+  ]
+  {{/each}}
+  {{#each proc_macro_deps}}
+  proc_macro_deps = [
+    {{#each this.packages}}
+    "//external/{{this.name}}/v{{this.epoch}}:{{this.name}}",
+    {{/each}}
+  ]
+  {{/each}}
+  {{#if features}}
+  features = [
+    {{#each features}}
+    "{{this}}",
+    {{/each}}
+  ]
+  {{/if}}
+
+  rustflags = [
+    "--cap-lints=allow",  # Suppress all warnings in crates.io crates
+  ]
+}
+{{/with}}
+{{/each}}
